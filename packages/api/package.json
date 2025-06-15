@@ -1,0 +1,15 @@
+{
+  "name": "@workspace/api",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --project tsconfig.json"
+  },
+  "dependencies": {
+    "cookies-next": "^6.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

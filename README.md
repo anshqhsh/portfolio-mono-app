@@ -1,31 +1,106 @@
-# shadcn/ui monorepo template
+# portfolio-mono-app
 
-This template is for creating a monorepo with shadcn/ui.
+모노레포 구조로 구성된 포트폴리오/샘플 프로젝트입니다. Next.js 기반의 웹 서비스, 어드민, 공통 패키지(API, UI, Utils 등)를 하나의 리포에서 관리합니다.
 
-## Usage
+---
+
+## 소개
+
+- **목적**: 이력서, 포트폴리오, 기술 데모 등 다양한 용도로 활용할 수 있는 모던 웹/어드민 샘플 프로젝트
+- **구조**: 웹 서비스, 어드민, 공통 패키지(API, UI, Utils, Constants 등)로 분리된 모노레포
+- **기술스택**: Next.js (App Router), React, TypeScript, pnpm, TurboRepo 등
+
+---
+
+## 폴더 구조
+
+```
+portfolio-mono-app/
+├── apps/
+│   ├── web/         # 사용자용 웹 서비스 (Next.js)
+│   └── admin/       # 어드민 서비스 (Next.js)
+├── packages/
+│   ├── api/         # 공통 API 클라이언트
+│   ├── ui/          # 공통 UI 컴포넌트
+│   ├── utils/       # 공통 유틸리티 함수
+│   └── constants/   # 공통 상수
+└── ...              # 설정 파일, 문서 등
+```
+
+---
+
+## 주요 특징
+
+- **모노레포**: 여러 앱/패키지를 하나의 리포에서 관리
+- **공통 코드 재사용**: API, UI, Utils, Constants 등 패키지화
+- **서비스별 환경 변수 분리**: 각 서비스별 .env 파일 사용
+- **확장성/유지보수성**: 실제 서비스 구조와 유사하게 설계
+- **비즈니스 로직 분리**: 데이터 가공 및 UI 로직을 명확히 분리하여 유지보수 용이
+
+---
+
+## 커스텀 훅 구조 및 설계
+
+### 1. `useUnifiedPortfolioSummary`
+
+- **역할**:  
+  다양한 포트폴리오(전략, 채권, SMA 등)와 환율, 상품 정보를 통합적으로 조회하여,  
+  UI에서 필요한 모든 요약 정보를 한 번에 제공하는 커스텀 훅입니다.
+
+- **주요 반환값**:
+
+  - `allPortfolios`: 각 포트폴리오별 요약 정보 배열
+  - `totalInvestmentsBalance`: 전체 투자 잔액(USD 기준)
+  - `totalInvestments`: 전체 투자 원금(USD 기준)
+  - `totalReturns`: 전체 수익(USD 기준)
+  - `top3Portfolios`: 수익 기준 상위 3개 포트폴리오
+  - `totalBalanceUSDT`: 전체 잔액(USD 기준) + 예치금
+  - `userDepositUSD`: 유저 예치금(USD 환산)
+  - `userRawBalance`: 유저의 실제 잔고(통화별)
+  - `currencies`: 환율 정보
+  - `isLoading`: 데이터 로딩 상태
+
+- **설계 포인트**:
+  - 여러 API를 병렬로 호출하여 데이터 통합
+  - 각 포트폴리오 타입별로 타입 가드 및 데이터 가공
+  - UI에서 바로 사용할 수 있도록 일관된 데이터 구조 제공
+  - 차트 등 UI 비즈니스 로직은 컴포넌트에서 처리하도록 분리
+
+### 2. 인증/상태 관리 훅
+
+- **AuthProvider**
+  - Context API 기반의 인증 상태 관리
+  - 로그인/로그아웃/유저 정보 갱신 등 제공
+  - App Router 환경에 맞는 라우팅 및 쿠키 관리 적용
+
+---
+
+## 실행 방법
 
 ```bash
-pnpm dlx shadcn@latest init
+# 의존성 설치
+pnpm install
+
+# 웹 서비스 실행
+pnpm --filter web dev
+
+# 어드민 서비스 실행
+pnpm --filter admin dev
 ```
 
-## Adding components
+---
 
-To add components to your app, run the following command at the root of your `web` app:
+## 활용 예시
 
-```bash
-pnpm dlx shadcn@latest add button -c apps/web
-```
+- 이력서/포트폴리오 제출용 샘플 프로젝트
+- 모노레포 구조 학습/데모
+- Next.js 기반 SaaS/서비스 개발 템플릿
+- 실제 서비스 구조와 유사한 데이터 통합/비즈니스 로직 설계 참고
 
-This will place the ui components in the `packages/ui/src/components` directory.
+---
 
-## Tailwind
+## 보안 및 참고
 
-Your `tailwind.config.ts` and `globals.css` are already set up to use the components from the `ui` package.
-
-## Using components
-
-To use the components in your app, import them from the `ui` package.
-
-```tsx
-import { Button } from "@workspace/ui/components/button"
-```
+> 본 프로젝트는 실제 서비스 구조와 유사하게 설계되었으나,  
+> 보안상 민감한 로직은 제외하고, 간단한 비즈니스 로직만 구현되어 있습니다.  
+> 코딩 스타일 및 구조 참고용으로 활용해 주세요.

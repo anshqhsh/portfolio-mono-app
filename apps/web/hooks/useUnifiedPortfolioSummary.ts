@@ -11,11 +11,6 @@ import type {
   OrderListItem,
 } from "@workspace/api";
 
-// 예외적인 symbol 처리 함수
-export const isVusdcOrVdarc = (symbol: string): boolean => {
-  return symbol === "VUSDC" || symbol === "VDARC";
-};
-
 /**
  * 단일 포트폴리오 요약 정보를 담는 타입
  * - 각 포트폴리오의 주요 정보(잔액, 수익률 등)를 표현
@@ -249,10 +244,7 @@ export function useUnifiedPortfolioSummary(): IUnifiedPortfolioSummary {
           };
         }
         if (isStrategyOrder(item)) {
-          const isVUSDCOrVDARC = isVusdcOrVdarc(item.symbol);
-          const amountWithProfit = isVUSDCOrVDARC
-            ? (item.amount_with_profit ?? item.amount)
-            : item.amount;
+          const amountWithProfit = item.amount;
           const currentBalance = amountWithProfit * (item.product.value ?? 0);
           const initialBalance = item.amount * item.initial_value;
           const returnPercent = item.product.apy;

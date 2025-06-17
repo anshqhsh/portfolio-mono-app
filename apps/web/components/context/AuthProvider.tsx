@@ -1,10 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { setCookie, deleteCookie, getCookie } from "cookies-next";
-import { createContext, useEffect, useState, ReactNode } from "react";
-import { useRouter } from "next/router";
-import { GetServerSideProps, GetServerSidePropsContext } from "next";
+import { createContext, useEffect, useState } from "react";
 import { useUserProfile } from "@/hooks/react-query/useUser";
 import { decodeJwt } from "@workspace/utils";
+import { useRouter } from "next/navigation";
+
 import {
   ACCESS_TOKEN_EXPIRY,
   AUTH_REFRESH_TOKEN_KEY,
@@ -57,6 +57,7 @@ export const AuthContext = createContext<IAuthContextValue>(defaultAuthContext);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const router = useRouter();
+
   const [state, setState] = useState<IAuthState>({
     isAuthenticated: false,
     user: null,
@@ -157,43 +158,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
-}
-
-/**
- * 클라이언트 사이드(React 컴포넌트)에서 인증이 필요한 페이지를 감싸는 HOC(Higher-Order Component)입니다.
- * 현재는 인증 로직이 없지만, 추후 인증 체크/리다이렉트 등 클라이언트 보호 로직을 추가할 수 있습니다.
- *
- * 사용 예시:
- *   export default withAuth(MyProtectedPage);
- */
-export function withAuth<P extends object>(
-  PageComponent: React.ComponentType<P>
-): React.ComponentType<P> {
-  return (props: P) => <PageComponent {...props} />;
-}
-
-/**
- * 서버 사이드 렌더링(SSR)에서 인증이 필요한 페이지의 getServerSideProps를 감싸는 함수입니다.
- * 인증 토큰이 없고, 현재 페이지가 로그인/문의 페이지가 아니면 로그인 페이지로 리다이렉트합니다.
- *
- * 사용 예시:
- *   export const getServerSideProps = requireAuth(async (context) => { ... });
- */
-export function requireAuth<G extends GetServerSideProps>(gssp: G): G {
-  return (async (context: GetServerSidePropsContext) => {
-    const { req, resolvedUrl } = context;
-    const isAuthPage = resolvedUrl === "/login" || resolvedUrl === "/contact";
-    const cookies = req.cookies;
-    const token = cookies[AUTH_TOKEN_KEY];
-    if (!token && !isAuthPage) {
-      return {
-        redirect: {
-          destination: "/login",
-          permanent: false,
-        },
-      };
-    }
-    // @ts-ignore
-    return await gssp(context);
-  }) as G;
 }

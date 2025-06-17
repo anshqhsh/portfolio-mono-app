@@ -2,7 +2,8 @@
   "extends": "@workspace/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "."
+    "rootDir": ".",
+    "types": ["node"]
   },
   "include": ["src", "types", "api.ts", "index.ts"]
 }

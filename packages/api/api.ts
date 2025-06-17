@@ -1,11 +1,24 @@
 import { getCookie, deleteCookie, setCookie } from "cookies-next";
 
-const API_URL = process.env.NEXT_PUBLIC_VEAGAX_API_URL;
-const AUTH_TOKEN_KEY = process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY as string;
-const AUTH_REFRESH_TOKEN_KEY = process.env
-  .NEXT_PUBLIC_AUTH_REFRESH_TOKEN_KEY as string;
-const ACCESS_TOKEN_EXPIRY = process.env
-  .NEXT_PUBLIC_ACCESS_TOKEN_EXPIRY as string;
+interface ApiConfig {
+  apiUrl: string;
+  authTokenKey: string;
+  authRefreshTokenKey: string;
+  accessTokenExpiry: string;
+  refreshTokenExpiry: string;
+}
+
+let config: ApiConfig = {
+  apiUrl: "",
+  authTokenKey: "",
+  authRefreshTokenKey: "",
+  accessTokenExpiry: "",
+  refreshTokenExpiry: "",
+};
+
+export function initializeApi(apiConfig: ApiConfig) {
+  config = apiConfig;
+}
 
 interface RequestConfig extends RequestInit {
   params?: Record<string, string>;
@@ -32,7 +45,7 @@ export class ApiError extends Error {
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
 
-// 로그아웃 핸들러 콜백 기본값 (아무 동작 없음)
+// 로그아웃 핸들러 콜백 기본값 (아무 동작 없음) - 커스텀 핸들러 설정 가능
 let logoutHandler: () => void = () => {};
 
 export function setLogoutHandler(handler: () => void) {
@@ -48,7 +61,7 @@ function addRefreshSubscriber(callback: (token: string) => void) {
   refreshSubscribers.push(callback);
 }
 
-// 토큰 갱신 핸들러 콜백 기본값 (미구현 에러)
+// 토큰 갱신 핸들러 콜백 기본값 (미구현 에러) - 커스텀 핸들러 설정 가능
 let refreshTokenHandler: (
   refreshToken: string
 ) => Promise<{ accessToken: string; refreshToken?: string }> = async () => {
@@ -116,10 +129,14 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 async function request<T>(
   endpoint: string,
-  config: RequestConfig = {}
+  requestConfig: RequestConfig = {}
 ): Promise<T> {
-  const { params, body, headers: customHeaders, ...restConfig } = config;
-  const token = getCookie(AUTH_TOKEN_KEY);
+  if (!config.apiUrl) {
+    throw new Error("API has not been initialized. Call initializeApi first.");
+  }
+
+  const { params, body, headers: customHeaders, ...restConfig } = requestConfig;
+  const token = getCookie(config.authTokenKey);
 
   const headers = new Headers({
     ...(token && { Authorization: `Bearer ${token}` }),
@@ -131,7 +148,7 @@ async function request<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  const url = new URL(endpoint, API_URL);
+  const url = new URL(endpoint, config.apiUrl);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, value);
@@ -174,7 +191,7 @@ async function request<T>(
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const refreshToken = getCookie(AUTH_REFRESH_TOKEN_KEY);
+          const refreshToken = getCookie(config.authRefreshTokenKey);
           if (!refreshToken) {
             handleLogout();
             throw new ApiError(403, { detail: "No refresh token available" });
@@ -182,8 +199,8 @@ async function request<T>(
 
           const newAccessToken = "";
 
-          setCookie(AUTH_TOKEN_KEY, newAccessToken, {
-            maxAge: parseInt(ACCESS_TOKEN_EXPIRY),
+          setCookie(config.authTokenKey, newAccessToken, {
+            maxAge: parseInt(config.accessTokenExpiry),
             path: "/",
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",

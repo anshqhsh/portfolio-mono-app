@@ -1,5 +1,5 @@
 {
-  "name": "shadcn-ui-monorepo",
+  "name": "monorepo-joonhyuk",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -9,6 +9,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
+    "@types/node": "^20",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "prettier": "^3.5.1",
@@ -18,5 +19,13 @@
   "packageManager": "pnpm@10.4.1",
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.80.7",
+    "@types/bignumber.js": "^5.0.4",
+    "bignumber.js": "^9.3.0",
+    "cookies-next": "^6.0.0",
+    "dayjs": "^1.11.13",
+    "jwt-decode": "^4.0.0"
   }
 }

@@ -1,11 +1,31 @@
 "use client";
 
-import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { setLogoutHandler, setRefreshTokenHandler } from "@workspace/api";
+import {
+  setLogoutHandler,
+  setRefreshTokenHandler,
+  initializeApi,
+} from "@workspace/api";
+import {
+  ACCESS_TOKEN_EXPIRY,
+  AUTH_REFRESH_TOKEN_KEY,
+  REFRESH_TOKEN_EXPIRY,
+  API_URL,
+  AUTH_TOKEN_KEY,
+} from "@/constants";
+
+import { useEffect } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  React.useEffect(() => {
+  useEffect(() => {
+    initializeApi({
+      apiUrl: API_URL!,
+      authTokenKey: AUTH_TOKEN_KEY!,
+      authRefreshTokenKey: AUTH_REFRESH_TOKEN_KEY!,
+      accessTokenExpiry: ACCESS_TOKEN_EXPIRY!,
+      refreshTokenExpiry: REFRESH_TOKEN_EXPIRY!,
+    });
+
     setLogoutHandler(() => {
       window.location.href = "/login";
     });

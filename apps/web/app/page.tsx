@@ -27,10 +27,9 @@ export function Home() {
             ) : (
               <BalanceChartCard
                 isLoading={isLoading}
-                totalInvestments={
-                  unifiedPortfolioSummary?.totalInvestments ?? 0
-                }
-                totalReturns={unifiedPortfolioSummary?.totalReturns ?? 0}
+                allPortfolios={unifiedPortfolioSummary?.allPortfolios}
+                totalInvestments={unifiedPortfolioSummary?.totalInvestments}
+                totalReturns={unifiedPortfolioSummary?.totalReturns}
               />
             )}
           </div>

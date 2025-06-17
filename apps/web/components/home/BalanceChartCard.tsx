@@ -17,31 +17,60 @@ import {
 
 import { formatCurrencyByRule } from "@workspace/utils";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { IPortfolioSummaryItem } from "@/hooks/useUnifiedPortfolioSummary";
 
 const COLORS = ["#2B6CB0", "#63B3ED", "#90CDF4", "#68D391"];
 const EMPTY_COLOR = "#CBD5E1";
 
-export default function BalanceChartCard({
-  isLoading,
-  chartData,
-  totalInvestments,
-  totalReturns,
-}: {
+interface IProps {
   isLoading: boolean;
-  chartData: { label: string; percentage: number; type: string }[];
+  allPortfolios: IPortfolioSummaryItem[];
   totalInvestments: number;
   totalReturns: number;
-}) {
+}
+
+export default function BalanceChartCard({
+  isLoading,
+  allPortfolios,
+  totalInvestments,
+  totalReturns,
+}: IProps) {
   if (isLoading) {
     return <Skeleton className="w-full h-full" />;
   }
 
-  if (!chartData || chartData.length === 0) return null;
+  if (!allPortfolios || allPortfolios.length === 0) return null;
 
-  const hasData = chartData && chartData.length > 0;
+  // 1. 비율 계산
+  const chartData = allPortfolios.map((portfolio) => ({
+    label: portfolio.name,
+    percentage: totalInvestments
+      ? Math.round((portfolio.sortingUSDValue / totalInvestments) * 100)
+      : 0,
+    type: portfolio.type,
+  }));
 
-  // 빈값일 때는 단일 gray slice로
-  const pieData = hasData ? chartData : [{ label: "", percentage: 1 }];
+  // 2. 0% 항목 제외
+  const filteredData = chartData.filter((item) => item.percentage > 0);
+
+  // 3. 5개 초과시 상위 4개 + Others로 묶기
+  let pieData = filteredData;
+  if (filteredData.length > 4) {
+    const top4 = filteredData.slice(0, 4);
+    const others = filteredData.slice(4).reduce(
+      (acc, item) => ({
+        ...acc,
+        percentage: acc.percentage + item.percentage,
+      }),
+      { label: "Others", percentage: 0, type: "others" }
+    );
+    pieData = [...top4, others];
+  }
+
+  // 4. 데이터 없으면 빈 slice
+  if (!pieData.length) {
+    pieData = [{ label: "", percentage: 1, type: "empty" }];
+  }
 
   return (
     <Card className="h-full">
@@ -53,12 +82,12 @@ export default function BalanceChartCard({
             cy="50%"
             innerRadius="65%"
             outerRadius="80%"
-            paddingAngle={hasData ? 5 : 0}
+            paddingAngle={pieData.length > 1 ? 5 : 0}
             dataKey="percentage"
             nameKey="label"
             labelLine={false}
             label={
-              hasData
+              pieData.length > 1
                 ? ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
                     const RADIAN = Math.PI / 180;
                     const radius =
@@ -86,11 +115,15 @@ export default function BalanceChartCard({
             {pieData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={hasData ? COLORS[index % COLORS.length] : EMPTY_COLOR}
+                fill={
+                  pieData.length > 1
+                    ? COLORS[index % COLORS.length]
+                    : EMPTY_COLOR
+                }
               />
             ))}
           </Pie>
-          {hasData && (
+          {pieData.length > 1 && (
             <Legend
               layout="vertical"
               align="right"

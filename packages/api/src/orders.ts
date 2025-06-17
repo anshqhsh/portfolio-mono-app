@@ -56,9 +56,18 @@ export interface IOrderBuyParams {
   currency: string;
 }
 
-// crypto strategy 타입
-export interface StrategyOrderListItem {
+// 공통 필드 정의
+export interface BaseOrderListItem {
+  user_id: number;
+  product_id?: number; // product가 string인 경우는 undefined
   symbol: string;
+  currency?: string;
+  type_name?: string;
+  start_datetime?: string;
+}
+
+// 전략 주문 (Strategy)
+export interface StrategyOrderListItem extends BaseOrderListItem {
   amount: number;
   quantity: number;
   initial_value: number;
@@ -72,14 +81,9 @@ export interface StrategyOrderListItem {
 }
 
 // Fixed Income, Preferred Return 등 (product가 string)
-export interface FixedIncomeOrderListItem {
+export interface FixedIncomeOrderListItem extends BaseOrderListItem {
   id: number;
-  user_id: number;
   product: string;
-  product_id: number;
-  symbol: string;
-  type_name: string; // 'PREFERRED_RETURN' | 'FIXED_INCOME'
-  currency: string;
   principal: number;
   principal_before_fee: number;
   upfront_fee_percent: number;
@@ -91,25 +95,18 @@ export interface FixedIncomeOrderListItem {
   days_until_unlock: number;
   days_until_maturity: number;
   status: string;
-  start_datetime: string;
   maturity_datetime: string;
 }
 
 // SMA 타입
-export interface SmaOrderListItem {
+export interface SmaOrderListItem extends BaseOrderListItem {
   investment_id: number;
-  product_id: number;
-  user_id: number;
-  type_name: string; // 'SMA'
-  symbol: string;
   current_balance: number;
   net_deposit: number;
-  start_datetime: string;
   total_pnl_amount: number;
   cummulative_pnl_percent: number;
   yearly_pnl_percent: number;
   principal: number;
-  currency: string;
 }
 
 export type OrderListItem =

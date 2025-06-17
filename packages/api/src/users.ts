@@ -16,6 +16,9 @@ export interface IUserProfile {
   last_login_at: number;
   login_counts: number;
   role: string;
+  balance: {
+    [key: string]: number;
+  };
 }
 
 export const usersApi = {

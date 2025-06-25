@@ -89,11 +89,10 @@ export interface IUnifiedPortfolioSummary {
  *
  * @example
  * const {
- *   allPortfolios,
- *   totalInvestmentsBalance,
- *   totalInvestments,
+ *   sortedPortfolios,
+ *   totalInvestedPrincipal,
+ *   totalCurrentValue,
  *   totalReturns,
- *   top3Portfolios,
  *   totalBalanceUSDT,
  *   isLoading,
  *   userDepositUSD,

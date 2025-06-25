@@ -62,7 +62,7 @@ export interface BaseOrderListItem {
   product_id?: number; // product가 string인 경우는 undefined
   symbol: string;
   currency?: string;
-  type_name?: string;
+  type_name: string;
   start_datetime?: string;
 }
 
@@ -109,7 +109,7 @@ export interface SmaOrderListItem extends BaseOrderListItem {
   principal: number;
 }
 
-export type OrderListItem =
+export type OrderListItemType =
   | StrategyOrderListItem
   | FixedIncomeOrderListItem
   | SmaOrderListItem;
@@ -141,7 +141,7 @@ export const orderApi = {
     return api.get<IOrderListResponse>(url);
   },
   getOrderList: async () => {
-    return api.get<OrderListItem[]>("/api/v2/orders/list");
+    return api.get<OrderListItemType[]>("/api/v2/orders/list");
   },
   createBuyOrder: async (data: IOrderBuyParams) => {
     return api.post("/api/v2/orders/buy", data);

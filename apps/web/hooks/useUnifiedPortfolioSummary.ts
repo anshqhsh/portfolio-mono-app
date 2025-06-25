@@ -11,6 +11,19 @@ import {
   mapOrderListToPortfolioSummaries,
   mapProductsToMetaData,
 } from "@/utils/portfoiloSummary";
+
+const EMPTY_PORTFOLIO_SUMMARY: IUnifiedPortfolioSummary = {
+  sortedPortfolios: [],
+  totalInvestedPrincipal: 0,
+  totalCurrentValue: 0,
+  totalReturns: 0,
+  totalBalanceUSDT: 0,
+  isLoading: false,
+  userDepositUSD: 0,
+  userRawBalance: undefined,
+  currencies: undefined,
+};
+
 /**
  * 단일 포트폴리오 요약 정보를 담는 타입
  * - 각 포트폴리오의 주요 정보(잔액, 수익률 등)를 표현
@@ -109,70 +122,61 @@ export function useUnifiedPortfolioSummary(): IUnifiedPortfolioSummary {
   });
 
   const userDepositUSD = calculateUserDepositUSD(userRawBalance, currencies);
-
-  const productMetaData = mapProductsToMetaData(products);
-
-  if (!orderList)
-    return {
-      sortedPortfolios: [],
-      totalInvestedPrincipal: 0,
-      totalCurrentValue: 0,
-      totalReturns: 0,
-      totalBalanceUSDT: 0,
-      isLoading:
-        isPortfolioProductsLoading || isCurrenciesLoading || isProductsLoading,
-      userDepositUSD,
-      userRawBalance,
-      currencies,
-    };
-
-  const allPortfolios = mapOrderListToPortfolioSummaries(
-    orderList,
-    currencies ?? [],
-    productMetaData
-  );
-
-  if (allPortfolios.length === 0) {
-    return {
-      sortedPortfolios: [],
-      totalInvestedPrincipal: 0,
-      totalCurrentValue: 0,
-      totalReturns: 0,
-      totalBalanceUSDT: 0,
-      isLoading:
-        isPortfolioProductsLoading || isCurrenciesLoading || isProductsLoading,
-      userDepositUSD,
-      userRawBalance,
-      currencies,
-    };
-  }
-  // 총 잔액(USD 기준)과 총 투자금(USD 기준) 계산
-  const { totalInvestedPrincipal, totalCurrentValue } =
-    calculateTotalInvestedAndCurrentValue(allPortfolios, currencies ?? []);
-
-  // 총 수익금 계산
-  const totalReturns = totalCurrentValue - totalInvestedPrincipal;
-
-  // sortingUSDValue 기준으로 정렬 (내림차순)
-  const sortedPortfolios = [...allPortfolios].sort(
-    (a, b) => b.sortingUSDValue - a.sortingUSDValue
-  );
-
-  // 총 잔액(USD 기준) + 예치금(USD 기준)
-  const totalBalanceUSDT = totalCurrentValue + userDepositUSD;
-
   const isLoading =
     isPortfolioProductsLoading || isCurrenciesLoading || isProductsLoading;
 
-  return {
-    sortedPortfolios,
-    totalInvestedPrincipal,
-    totalCurrentValue,
-    totalReturns,
-    totalBalanceUSDT,
+  // 초기 값으로 항상 계산 가능한 값을 추가
+  let result: IUnifiedPortfolioSummary = {
+    ...EMPTY_PORTFOLIO_SUMMARY,
     isLoading,
     userDepositUSD,
     userRawBalance,
     currencies,
   };
+
+  const productMetaData = mapProductsToMetaData(products);
+
+  // 조건을 의미 있는 변수로 분리
+  const hasPortfolioData = !!orderList && !!currencies;
+  let allPortfolios: IPortfolioSummaryItem[] = [];
+  if (hasPortfolioData) {
+    allPortfolios = mapOrderListToPortfolioSummaries(
+      orderList,
+      currencies,
+      productMetaData
+    );
+  }
+  const hasPortfolios = hasPortfolioData && allPortfolios.length > 0;
+
+  if (hasPortfolios) {
+    const sortedPortfolios = [...allPortfolios].sort(
+      (a, b) => b.sortingUSDValue - a.sortingUSDValue
+    );
+    const { totalInvestedPrincipal, totalCurrentValue } =
+      calculateTotalInvestedAndCurrentValue(allPortfolios, currencies);
+    const totalReturns = totalCurrentValue - totalInvestedPrincipal;
+    const totalBalanceUSDT = totalCurrentValue + userDepositUSD;
+    result = {
+      ...result,
+      sortedPortfolios,
+      totalInvestedPrincipal,
+      totalCurrentValue,
+      totalReturns,
+      totalBalanceUSDT,
+    };
+  } else if (hasPortfolioData) {
+    // 포트폴리오가 없지만, 예치금만 잔액에 포함
+    result = {
+      ...result,
+      totalBalanceUSDT: userDepositUSD,
+    };
+  } else {
+    // 데이터가 부족할 때, 예치금만 잔액에 포함
+    result = {
+      ...result,
+      totalBalanceUSDT: userDepositUSD,
+    };
+  }
+
+  return result;
 }

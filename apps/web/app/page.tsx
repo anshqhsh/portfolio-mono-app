@@ -13,6 +13,7 @@ export function Home() {
   const unifiedPortfolioSummary = useUnifiedPortfolioSummary();
 
   const isLoading = unifiedPortfolioSummary.isLoading;
+  const top3Portfolios = unifiedPortfolioSummary.sortedPortfolios.slice(0, 3);
 
   return (
     <div className="min-h-screen ">
@@ -27,8 +28,10 @@ export function Home() {
             ) : (
               <BalanceChartCard
                 isLoading={isLoading}
-                allPortfolios={unifiedPortfolioSummary?.allPortfolios}
-                totalInvestments={unifiedPortfolioSummary?.totalInvestments}
+                allPortfolios={unifiedPortfolioSummary?.sortedPortfolios}
+                totalInvestments={
+                  unifiedPortfolioSummary?.totalInvestedPrincipal
+                }
                 totalReturns={unifiedPortfolioSummary?.totalReturns}
               />
             )}
@@ -41,7 +44,7 @@ export function Home() {
           </div>
           <div className="col-span-1 lg:col-span-5 lg:row-start-2">
             {/* <MyTopPortfoliosCard
-                  portfolios={unifiedPortfolioSummary?.top3Portfolios}
+                  portfolios={top3Portfolios}
                 /> */}
           </div>
           <div className="col-span-1 lg:col-span-2 lg:row-start-2">

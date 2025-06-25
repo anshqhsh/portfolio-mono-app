@@ -49,11 +49,10 @@ portfolio-mono-app/
 
 - **주요 반환값**:
 
-  - `allPortfolios`: 각 포트폴리오별 요약 정보 배열
-  - `totalInvestmentsBalance`: 전체 투자 잔액(USD 기준)
-  - `totalInvestments`: 전체 투자 원금(USD 기준)
-  - `totalReturns`: 전체 수익(USD 기준)
-  - `top3Portfolios`: 수익 기준 상위 3개 포트폴리오
+  - `sortedPortfolios`: 정렬된 포트폴리오 요약 정보 배열
+  - `totalInvestedPrincipal`: 전체 투자 원금(USD 기준)
+  - `totalCurrentValue`: 전체 평가금액(USD 기준, 원금+수익)
+  - `totalReturns`: 전체 수익(USD 기준, 평가금액-원금)
   - `totalBalanceUSDT`: 전체 잔액(USD 기준) + 예치금
   - `userDepositUSD`: 유저 예치금(USD 환산)
   - `userRawBalance`: 유저의 실제 잔고(통화별)
@@ -62,18 +61,44 @@ portfolio-mono-app/
 
 - **설계 포인트**:
   - 여러 API를 병렬로 호출하여 데이터 통합
+  - 각 계산을 순수함수로 분리하고 테스트를 용이하게 수정(**테스트코드 추가 예정**)
   - 각 포트폴리오 타입별로 타입 가드 및 데이터 가공
+  - **복잡한 계산/가공 로직은 모두 utils/portfoiloSummary.ts로 분리**
   - UI에서 바로 사용할 수 있도록 일관된 데이터 구조 제공
   - 차트 등 UI 비즈니스 로직은 컴포넌트에서 처리하도록 분리
 
-### 2. 인증/상태 관리 훅
+#### 주요 유틸 함수
 
-- **AuthProvider**
-  - Context API 기반의 인증 상태 관리
-  - 로그인/로그아웃/유저 정보 갱신 등 제공
-  - App Router 환경에 맞는 라우팅 및 쿠키 관리 적용
+- `calculateUserDepositUSD(balances, currencies)`:  
+  유저의 잔고를 USD 기준으로 환산하여 합산
+
+- `mapOrderListToPortfolioSummaries(orderList, currencies, productMetaData)`:  
+  포트폴리오 리스트를 요약 정보 배열로 변환
+
+- `calculateTotalInvestedAndCurrentValue(portfolios, currencies)`:  
+  전체 투자 원금과 평가금액(USD 기준)을 한 번에 계산
+
+- `mapProductsToMetaData(products)`:  
+  상품 리스트에서 메타데이터(로고, 심볼, 설명 등) 추출
 
 ---
+
+### 예시 코드
+
+```ts
+const {
+  sortedPortfolios,
+  totalInvestedPrincipal,
+  totalCurrentValue,
+  totalReturns,
+  totalBalanceUSDT,
+  isLoading,
+  userDepositUSD,
+  userRawBalance,
+  currencies,
+} = useUnifiedPortfolioSummary();
+```
+
 
 ## 실행 방법
 
@@ -107,3 +132,17 @@ pnpm --filter admin dev
 > 실제 서비스 운영에 필요한 모든 기능/정책이 구현되어 있지 않습니다.
 >
 > **즉, 이 프로젝트는 실서비스가 아닌 "코딩 스타일 및 설계 참고용 샘플"임을 유의해 주세요.**
+
+
+## 변경 이력
+
+---
+
+> **2024-06-25**
+>
+> - 포트폴리오 요약 훅(`useUnifiedPortfolioSummary`)의 반환값 구조를 개선
+> - 복잡한 계산/가공 로직을 `utils/portfoiloSummary.ts`로 분리
+> - 주요 유틸 함수: `calculateUserDepositUSD`, `mapOrderListToPortfolioSummaries`, `calculateTotalInvestedAndCurrentValue` 등 추가
+> - 반환값 필드명: `allPortfolios` → `sortedPortfolios`, `totalInvestmentsBalance` → `totalCurrentValue`, `totalInvestments` → `totalInvestedPrincipal` 등으로 변경
+
+---

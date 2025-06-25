@@ -10,7 +10,7 @@ import type {
   SmaOrderListItem,
   OrderListItem,
 } from "@workspace/api";
-
+import { calculateUserDepositUSD } from "@/utils/portfoiloSummary";
 /**
  * 단일 포트폴리오 요약 정보를 담는 타입
  * - 각 포트폴리오의 주요 정보(잔액, 수익률 등)를 표현
@@ -143,18 +143,7 @@ export function useUnifiedPortfolioSummary(): IUnifiedPortfolioSummary {
     queryFn: () => productApi.getProducts(),
   });
 
-  // 유저 예치금(잔고) USD 환산 합계 계산
-  const userDepositUSD = useMemo(() => {
-    const balances = state.user?.balance;
-    if (!balances || !currencies) return 0;
-    return Object.entries(balances).reduce((sum, [currency, amount]) => {
-      if (currency === "USD" || currency === "USDT")
-        return sum + Number(amount);
-      const currencyPrice =
-        currencies.find((c) => c.id === currency)?.price ?? 1;
-      return sum + Number(amount) * Number(currencyPrice);
-    }, 0);
-  }, [state.user?.balance, currencies]);
+  const userDepositUSD = calculateUserDepositUSD(userRawBalance, currencies);
 
   const productImages = useMemo(() => {
     return products?.map((product) => {

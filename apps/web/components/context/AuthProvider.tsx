@@ -16,10 +16,10 @@ import { IUserProfile } from "@workspace/api";
 
 export interface IAuthToken {
   user_id: number;
-  role: string; // user | admin
-  service: string; // vegax | investor
+  role: string;
+  service: string;
   exp: number;
-  token_type: string; // access
+  token_type: string;
 }
 
 interface IAuthState {

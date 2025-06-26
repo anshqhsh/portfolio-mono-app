@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { setCookie, deleteCookie, getCookie } from "cookies-next";
-import { createContext, useEffect, useState } from "react";
+import { setCookie, getCookie, deleteCookie } from "cookies-next";
+import { createContext, useEffect, useState, useCallback } from "react";
 import { useUserProfile } from "@/hooks/react-query/useUser";
 import { decodeJwt } from "@workspace/utils";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ import {
 } from "@/constants";
 
 import { IUserProfile } from "@workspace/api";
+import { handleLogout } from "@/utils/auth";
 
 export interface IAuthToken {
   user_id: number;
@@ -54,105 +55,134 @@ const defaultAuthContext: IAuthContextValue = {
 };
 export const AuthContext = createContext<IAuthContextValue>(defaultAuthContext);
 
+// --- 유틸 함수 분리 ---
+function parseAuthToken(token: string): number | null {
+  const decoded = decodeJwt<IAuthToken>(token);
+  if (decoded?.exp && decoded.exp < Date.now() / 1000) {
+    return null;
+  }
+  return decoded?.user_id ?? null;
+}
+
+function setAuthCookies(accessToken: string, refreshToken: string) {
+  setCookie(AUTH_TOKEN_KEY, accessToken, {
+    maxAge: parseInt(ACCESS_TOKEN_EXPIRY),
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+  setCookie(AUTH_REFRESH_TOKEN_KEY, refreshToken, {
+    maxAge: parseInt(REFRESH_TOKEN_EXPIRY),
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const [state, setState] = useState<IAuthState>({
-    isAuthenticated: false,
-    user: null,
-    isLoading: true,
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<IUserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<number | null>(null);
 
-  const userIdNumber = typeof userId === "number" ? userId : 0;
   const {
     data: userInfo,
-    isLoading,
+    isLoading: userInfoLoading,
     refetch,
-  } = useUserProfile(userIdNumber, {
-    enabled: typeof userId === "number",
+  } = useUserProfile(userId ?? 0, {
+    enabled: typeof userId === "number" && userId !== null,
     retry: false,
   });
 
+  // userInfo가 바뀔 때마다 context의 user를 동기화
   useEffect(() => {
+    setUser(userInfo ?? null);
+  }, [userInfo]);
+
+  // 인증 초기화
+  const initAuth = useCallback(async () => {
+    setIsLoading(true);
     const token = getCookie(AUTH_TOKEN_KEY);
-    if (token) {
-      const decoded = decodeJwt<IAuthToken>(token as string);
-      if (decoded?.user_id) setUserId(decoded.user_id);
+    const uid = token ? parseAuthToken(token as string) : null;
+    if (uid) {
+      setUserId(uid);
+      setIsAuthenticated(true);
+      const result = await refetch();
+      if (result.data) {
+        setUser(result.data);
+      } else {
+        _handleLogout();
+      }
+    } else {
+      _handleLogout();
     }
+    setIsLoading(false);
+  }, [refetch]);
+
+  useEffect(() => {
+    initAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const refreshUser = async () => {
+  // 로그인 api 요청후 context 업데이트
+  const handleLogin = useCallback(
+    async (accessToken: string, refreshToken: string) => {
+      setAuthCookies(accessToken, refreshToken);
+      const uid = parseAuthToken(accessToken);
+      if (uid) {
+        setUserId(uid);
+        setIsAuthenticated(true);
+        setIsLoading(true);
+        const result = await refetch();
+        if (result.data) {
+          setUser(result.data);
+          router.push("/");
+        } else {
+          _handleLogout();
+        }
+        setIsLoading(false);
+      } else {
+        _handleLogout();
+      }
+    },
+    [refetch, router]
+  );
+
+  // 로그아웃
+  const _handleLogout = useCallback(() => {
+    setUserId(null);
+    setIsAuthenticated(false);
+    setUser(null);
+    setIsLoading(false);
+    queryClient.clear();
+    handleLogout();
+  }, [queryClient]);
+
+  // 유저 정보 새로고침
+  const refreshUser = useCallback(async () => {
+    setIsLoading(true);
     try {
       const result = await refetch();
       if (result.data) {
-        setState((prev) => ({
-          ...prev,
-          user: result.data,
-          isAuthenticated: true,
-          isLoading: false,
-        }));
+        setUser(result.data);
+      } else {
+        _handleLogout();
       }
-    } catch (error) {
-      console.error("Failed to refresh user:", error);
-      logout();
+    } catch {
+      _handleLogout();
     }
-  };
-
-  useEffect(() => {
-    if (userInfo) {
-      setState((prev) => ({
-        ...prev,
-        user: userInfo,
-        isAuthenticated: true,
-        isLoading: false,
-      }));
-    }
-  }, [userInfo]);
-
-  const login = async (accessToken: string, refreshToken: string) => {
-    setCookie(AUTH_TOKEN_KEY, accessToken, {
-      maxAge: parseInt(ACCESS_TOKEN_EXPIRY),
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-    setCookie(AUTH_REFRESH_TOKEN_KEY, refreshToken, {
-      maxAge: parseInt(REFRESH_TOKEN_EXPIRY),
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-    const decoded = decodeJwt<IAuthToken>(accessToken);
-    if (decoded?.user_id) {
-      setUserId(decoded.user_id);
-      const result = await refetch();
-      if (result.data) {
-        router.push("/");
-      }
-    }
-  };
-
-  const logout = () => {
-    deleteCookie(AUTH_TOKEN_KEY);
-    deleteCookie(AUTH_REFRESH_TOKEN_KEY);
-    setUserId(null);
-    queryClient.clear();
-    setState({
-      isAuthenticated: false,
-      user: null,
-      isLoading: false,
-    });
-    router.push("/login");
-  };
+    setIsLoading(false);
+  }, [refetch, _handleLogout]);
 
   const contextValue: IAuthContextValue = {
-    state,
-    login,
-    logout,
+    state: { isAuthenticated, user, isLoading },
+    login: handleLogin,
+    logout: _handleLogout,
     refreshUser,
-    isLoading,
+    isLoading: isLoading || userInfoLoading,
   };
 
   return (

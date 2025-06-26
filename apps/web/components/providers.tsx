@@ -15,6 +15,8 @@ import {
 } from "@/constants";
 
 import { useEffect } from "react";
+import { AuthProvider } from "./context/AuthProvider";
+import { handleLogout } from "@/utils/auth";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -26,9 +28,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       refreshTokenExpiry: REFRESH_TOKEN_EXPIRY!,
     });
 
-    setLogoutHandler(() => {
-      window.location.href = "/login";
-    });
+    setLogoutHandler(handleLogout);
 
     setRefreshTokenHandler(async (refreshToken: string) => {
       const res = await fetch("/api/auth/refresh", {
@@ -52,7 +52,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
       enableColorScheme
     >
-      {children}
+      <AuthProvider>{children}</AuthProvider>
     </NextThemesProvider>
   );
 }

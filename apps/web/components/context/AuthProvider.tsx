@@ -102,6 +102,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(userInfo ?? null);
   }, [userInfo]);
 
+  // 로그아웃
+  const _handleLogout = useCallback(() => {
+    setUserId(null);
+    setIsAuthenticated(false);
+    setUser(null);
+    setIsLoading(false);
+    queryClient.clear();
+    handleLogout();
+  }, [queryClient]);
+
   // 인증 초기화
   const initAuth = useCallback(async () => {
     setIsLoading(true);
@@ -120,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       _handleLogout();
     }
     setIsLoading(false);
-  }, [refetch]);
+  }, [refetch, _handleLogout]);
 
   useEffect(() => {
     initAuth();
@@ -148,18 +158,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         _handleLogout();
       }
     },
-    [refetch, router]
+    [refetch, router, _handleLogout]
   );
-
-  // 로그아웃
-  const _handleLogout = useCallback(() => {
-    setUserId(null);
-    setIsAuthenticated(false);
-    setUser(null);
-    setIsLoading(false);
-    queryClient.clear();
-    handleLogout();
-  }, [queryClient]);
 
   // 유저 정보 새로고침
   const refreshUser = useCallback(async () => {

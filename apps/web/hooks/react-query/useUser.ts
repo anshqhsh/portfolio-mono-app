@@ -9,12 +9,13 @@ import { usersApi } from "@workspace/api";
  */
 export function useUserProfile(
   id: number,
-  params?: { enabled: boolean; retry: boolean }
+  params?: { enabled: boolean; retry: boolean; staleTime: number }
 ) {
   return useQuery({
     queryKey: userKeys.getUserProfile,
     queryFn: () => usersApi.getUserProfile(id),
     enabled: params?.enabled, // 옵션 전달
     retry: params?.retry, // 옵션 전달
+    staleTime: params?.staleTime, // 옵션 전달
   });
 }

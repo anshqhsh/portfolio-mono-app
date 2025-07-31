@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { cn } from "../lib/utils.js";
+import { cn } from "../lib/utils.ts";
 import "react-phone-number-input/style.css";
 
 interface PhoneNumberInputProps {

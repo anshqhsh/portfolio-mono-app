@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "../lib/utils.js";
+import { cn } from "../lib/utils.ts";
 
 type InputProps = React.ComponentProps<"input"> & {
   _size?: "xs" | "sm" | "md";

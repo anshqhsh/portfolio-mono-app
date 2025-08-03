@@ -4,15 +4,15 @@ export interface Achievement {
   items: string[];
 }
 
-export interface ProjectDetail {
+export interface Project {
   title: string;
   achievements: Achievement[];
   techStack: string[];
 }
 
-export interface ResumeData {
+export interface Resume {
   company: string;
   period: string;
   description: string;
-  projects: ProjectDetail[];
+  projects: Project[];
 }

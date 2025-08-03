@@ -93,7 +93,12 @@ export default function LLMResumePage() {
               </CardHeader>
               <CardContent>
                 {RESUME_DATA.map((experience, index) => (
-                  <CompanyExperience key={index} experience={experience} />
+                  <CompanyExperience
+                    key={index}
+                    experience={experience}
+                    index={index}
+                    totalCount={RESUME_DATA.length}
+                  />
                 ))}
               </CardContent>
             </Card>

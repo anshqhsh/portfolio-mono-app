@@ -64,7 +64,7 @@ export default function CompanyExperience({
               <p className="text-sm mt-1">{experience.description}</p>
             </div>
           </AccordionTrigger>
-          <AccordionContent>
+          <AccordionContent className="pl-2">
             <AnimatePresence>
               {isOpen &&
                 experience.projects.map((project, projectIndex) => (

@@ -74,18 +74,6 @@ export default function ProjectDetail({
               <h3 className="font-semibold text-lg text-left">
                 {project.title}
               </h3>
-              <div className="flex flex-wrap gap-2">
-                {project.techStack.slice(0, 3).map((tech) => (
-                  <Badge key={tech} variant="outline" className="text-xs">
-                    {tech}
-                  </Badge>
-                ))}
-                {project.techStack.length > 3 && (
-                  <Badge variant="outline" className="text-xs">
-                    +{project.techStack.length - 3}
-                  </Badge>
-                )}
-              </div>
             </div>
           </AccordionTrigger>
           <AccordionContent>

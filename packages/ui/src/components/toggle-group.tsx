@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
-import { cn } from "../lib/utils.js";
+import { cn } from "@workspace/ui/lib/utils";
 import { cva } from "class-variance-authority";
 
 const toggleVariants = cva(

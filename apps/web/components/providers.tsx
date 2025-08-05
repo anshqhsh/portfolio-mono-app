@@ -15,7 +15,6 @@ import {
 } from "@/constants";
 
 import { useEffect } from "react";
-import { AuthProvider } from "./context/AuthProvider";
 import { handleLogout } from "@/utils/auth";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -52,7 +51,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
       enableColorScheme
     >
-      <AuthProvider>{children}</AuthProvider>
+      {children}
     </NextThemesProvider>
   );
 }

@@ -7,8 +7,14 @@
 ## 소개
 
 - **목적**: 이력서, 포트폴리오, 기술 데모 등 다양한 용도로 활용할 수 있는 모던 웹/어드민 샘플 프로젝트
-- **구조**: 웹 서비스, 어드민, 공통 패키지(API, UI, Utils, Constants 등)로 분리된 모노레포
+- **구조**: 웹 서비스, 어드민, AI 이력서, 공통 패키지(API, UI, Utils, Constants 등)로 분리된 모노레포
 - **기술스택**: Next.js (App Router), React, TypeScript, pnpm, TurboRepo 등
+
+## 🌐 배포된 서비스
+
+- **🎨 AI-Powered Resume**: https://portfolio-mono-app-llm-resume-ltbr430zj-anshqhshs-projects.vercel.app
+- **💼 Web Service**: (배포 예정)
+- **⚙️ Admin Service**: (배포 예정)
 
 ---
 
@@ -18,7 +24,8 @@
 portfolio-mono-app/
 ├── apps/
 │   ├── web/         # 사용자용 웹 서비스 (Next.js)
-│   └── admin/       # 어드민 서비스 (Next.js)
+│   ├── admin/       # 어드민 서비스 (Next.js)
+│   └── llm-resume/  # AI 인터랙티브 이력서 (Next.js)
 ├── packages/
 │   ├── api/         # 공통 API 클라이언트
 │   ├── ui/          # 공통 UI 컴포넌트
@@ -158,7 +165,16 @@ function BalanceChart() {
 
 ### 변경 이력(Changelog) 예시
 
-> **2024-06-XX (최신)**
+> **2024-12-XX (최신)**
+>
+> - **🎨 AI-Powered Resume 서비스 추가**: 인터랙티브 이력서 애플리케이션 신규 개발
+> - **순차적 애니메이션 시스템**: 회사별 → 프로젝트별 자동 전환 및 읽기 시간 기반 지능적 딜레이
+> - **사용자 인터랙션 감지**: 클릭 시 애니메이션 즉시 중단 및 수동 제어 모드 전환
+> - **프로그레스 바 및 제어 기능**: 실시간 진행률 표시, 재생/일시정지/스킵/다시보기 버튼
+> - **Progress UI 컴포넌트**: @workspace/ui 패키지에 재사용 가능한 프로그레스 바 추가
+> - **모노레포 배포 최적화**: Vercel 배포 환경에서 개별 앱 독립 배포 구현
+
+> **2024-06-XX**
 >
 > - **AuthProvider 제거**: react-query 중심의 간결한 인증 관리로 전환
 > - **useAuth/useAuthActions**: 토큰 기반 조건부 쿼리로 인증 상태 자동 관리
@@ -174,6 +190,47 @@ function BalanceChart() {
 
 ---
 
+## 📱 서비스별 상세 정보
+
+### 🎨 AI Resume (llm-resume) (작업중...)
+
+> **배포 URL**: https://portfolio-mono-app-llm-resume-ltbr430zj-anshqhshs-projects.vercel.app
+
+AI 기반 인터랙티브 이력서 애플리케이션으로, 사용자 경험을 중심으로 설계된 혁신적인 이력서 플랫폼입니다.
+
+#### 🔥 핵심 기능
+
+- **🎬 순차적 애니메이션 시스템**: 회사별 → 프로젝트별 자동 전환
+- **🎯 스마트 사용자 인터랙션**: 클릭 시 애니메이션 즉시 중단 및 수동 제어 모드 전환
+- **📊 프로그레스 바**: 실시간 진행률 표시 및 애니메이션 제어 버튼
+- **📱 반응형 디자인**: 모바일/데스크톱 완벽 대응
+- **⚡ 성능 최적화**: Framer Motion 기반 부드러운 애니메이션
+
+#### 🛠️ 기술 스택
+
+- **Frontend**: Next.js 14, React 18, TypeScript
+- **Animation**: Framer Motion
+- **UI/UX**: shadcn/ui, Tailwind CSS, Radix UI
+- **State Management**: React Hooks (useState, useEffect)
+- **Algorithm**: 커스텀 읽기 시간 계산 알고리즘
+
+#### 📈 주요 성과
+
+- **사용자 경험**: 자동 애니메이션 + 수동 제어의 하이브리드 UX
+- **코드 품질**: 컴포넌트 아키텍처 최적화 및 관심사 분리
+- **성능**: 메모리 누수 방지 및 애니메이션 최적화
+- **접근성**: 키보드 네비게이션 및 스크린 리더 지원
+
+#### 🎨 사용자 경험 흐름
+
+1. **초기 로딩**: 모든 회사 카드가 순차적으로 렌더링
+2. **자동 애니메이션**: 첫 번째 회사부터 프로젝트별 순차 표시
+3. **읽기 시간 기반**: 각 프로젝트의 내용량에 따른 지능적 딜레이
+4. **사용자 제어**: 클릭 시 즉시 수동 제어 모드로 전환
+5. **자유 탐색**: 원하는 회사/프로젝트 자유롭게 탐색 가능
+
+---
+
 ## 실행 방법
 
 ```bash
@@ -185,6 +242,9 @@ pnpm --filter web dev
 
 # 어드민 서비스 실행
 pnpm --filter admin dev
+
+# AI 이력서 서비스 실행
+pnpm --filter llm-resume dev
 ```
 
 ---
@@ -196,6 +256,8 @@ pnpm --filter admin dev
 - Next.js 기반 SaaS/서비스 개발 템플릿
 - 실제 서비스 구조와 유사한 데이터 통합/비즈니스 로직 설계 참고
 - **관심사 분리**와 **선언적 프로그래밍** 패턴 학습
+- **인터랙티브 애니메이션 시스템** 구현 참고
+- **사용자 경험(UX) 최적화** 기법 학습
 
 ---
 

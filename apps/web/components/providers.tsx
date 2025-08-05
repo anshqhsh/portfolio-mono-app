@@ -1,6 +1,7 @@
 "use client";
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   setLogoutHandler,
   setRefreshTokenHandler,
@@ -14,10 +15,19 @@ import {
   AUTH_TOKEN_KEY,
 } from "@/constants";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { handleLogout } from "@/utils/auth";
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60 * 1000, // 1 minute
+        retry: 1,
+      },
+    },
+  }));
+
   useEffect(() => {
     initializeApi({
       apiUrl: API_URL!,
@@ -44,14 +54,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-      enableColorScheme
-    >
-      {children}
-    </NextThemesProvider>
+    <QueryClientProvider client={queryClient}>
+      <NextThemesProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+        enableColorScheme
+      >
+        {children}
+      </NextThemesProvider>
+    </QueryClientProvider>
   );
 }

@@ -19,6 +19,9 @@ export const TECH_STACKS = [
       "Radix UI",
       "shadcn/ui",
       "i18n",
+      "TradingView",
+      "Storybook",
+      "Jest",
     ],
   },
   {

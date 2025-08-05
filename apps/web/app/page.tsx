@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 import { useUnifiedPortfolioSummary } from "@/hooks/useUnifiedPortfolioSummary";
 import BalanceChartCardSkeleton from "@/components/home/BalanceChartCardSkeleton";
@@ -9,7 +11,7 @@ const BalanceChartCard = dynamic(
   }
 );
 
-export function Home() {
+export default function Home() {
   const unifiedPortfolioSummary = useUnifiedPortfolioSummary();
 
   const isLoading = unifiedPortfolioSummary.isLoading;
@@ -55,5 +57,3 @@ export function Home() {
     </div>
   );
 }
-
-export default Home;

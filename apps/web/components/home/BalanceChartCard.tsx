@@ -18,7 +18,6 @@ import {
 import { formatCurrencyByRule } from "@workspace/utils";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { IPortfolioSummaryItem } from "@/hooks/useUnifiedPortfolioSummary";
-import { usePieData } from "@/hooks/usePieData";
 
 const COLORS = ["#2B6CB0", "#63B3ED", "#90CDF4", "#68D391"];
 const EMPTY_COLOR = "#CBD5E1";
@@ -36,13 +35,42 @@ export default function BalanceChartCard({
   totalInvestments,
   totalReturns,
 }: IProps) {
-  const pieData = usePieData(allPortfolios, totalInvestments);
-
   if (isLoading) {
     return <Skeleton className="w-full h-full" />;
   }
 
   if (!allPortfolios || allPortfolios.length === 0) return null;
+
+  // 1. 비율 계산
+  const chartData = allPortfolios.map((portfolio) => ({
+    label: portfolio.name,
+    percentage: totalInvestments
+      ? Math.round((portfolio.sortingUSDValue / totalInvestments) * 100)
+      : 0,
+    type: portfolio.type,
+  }));
+
+  // 2. 0% 항목 제외
+  const filteredData = chartData.filter((item) => item.percentage > 0);
+
+  // 3. 5개 초과시 상위 4개 + Others로 묶기
+  let pieData = filteredData;
+  if (filteredData.length > 4) {
+    const top4 = filteredData.slice(0, 4);
+    const others = filteredData.slice(4).reduce(
+      (acc, item) => ({
+        ...acc,
+        percentage: acc.percentage + item.percentage,
+      }),
+      { label: "Others", percentage: 0, type: "others" }
+    );
+    pieData = [...top4, others];
+  }
+
+  // 4. 데이터 없으면 빈 slice
+  if (!pieData.length) {
+    pieData = [{ label: "", percentage: 1, type: "empty" }];
+  }
 
   return (
     <Card className="h-full">
@@ -128,6 +156,24 @@ export default function BalanceChartCard({
             </div>
             <div className="text-positive sm:text-sm md:text-2xl font-semibold">
               {formatCurrencyByRule(totalReturns, "USD")}
+            </div>
+          </div>
+          <div>
+            <div className="text-ui-secondary text-sm">
+              <HoverCard>
+                <HoverCardTrigger>
+                  <div className="flex items-center gap-1 sm:text-sm md:text-base font-semibold">
+                    {"amount-invested"}{" "}
+                    <Info className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                </HoverCardTrigger>
+                <HoverCardContent>
+                  {"amount-invested-description"}
+                </HoverCardContent>
+              </HoverCard>
+            </div>
+            <div className="text-primary sm:text-sm md:text-2xl font-semibold">
+              {formatCurrencyByRule(totalInvestments, "USD")}
             </div>
           </div>
         </div>

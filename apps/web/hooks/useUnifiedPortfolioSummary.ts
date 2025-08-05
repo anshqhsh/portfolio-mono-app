@@ -1,8 +1,9 @@
+import { useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { productApi, ICurrency } from "@workspace/api";
 import { orderApi } from "@workspace/api";
 
-import { useAuth } from "@/hooks/useUserQuery";
+import { AuthContext } from "@/components/context/AuthProvider";
 
 import {
   calculateTotalInvestedAndCurrentValue,
@@ -100,8 +101,9 @@ export interface IUnifiedPortfolioSummary {
  * } = useUnifiedPortfolioSummary();
  */
 export function useUnifiedPortfolioSummary(): IUnifiedPortfolioSummary {
-  const { user } = useAuth();
-  const userRawBalance: Record<string, number> | undefined = user?.balance;
+  const { state } = useContext(AuthContext);
+  const userRawBalance: Record<string, number> | undefined =
+    state.user?.balance;
   // API calls
   const { data: orderList, isLoading: isPortfolioProductsLoading } = useQuery({
     queryKey: ["portfolio"],

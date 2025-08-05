@@ -191,7 +191,7 @@ export const RESUME_DATA: Resume[] = [
     company: "플라잉캣",
     period: "2022.10.04 ~ 2023.05.05",
     description:
-      "Frontend Developer로서 B2B 스케줄링 SaaS와 퀵커머스 앱 개발에 참여하여 사용자 중심의 UI/UX 설계 및 성능 최적화를 주도",
+      "프론트앤드 개발자로서 B2B 스케줄링 SaaS와 퀵커머스 앱 개발에 참여하여 사용자 중심의 UI/UX 설계 및 성능 최적화를 주도",
     projects: [
       {
         title: "SYNC – 캘린더 기반 B2B 업무 스케줄링 SaaS",
